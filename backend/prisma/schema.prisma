@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Gym {
+  id        String   @id @default(uuid())
+  name      String
+
+  ownerId   String   @unique
+  owner     User     @relation("GymOwner", fields: [ownerId], references: [id])
+
+  members   User[]   @relation("GymMembers")
+
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role
+
+  ownedGym  Gym?     @relation("GymOwner")
+
+  gymId     String?
+  gym       Gym?     @relation("GymMembers", fields: [gymId], references: [id])
+  createdAt DateTime @default(now())
+  memberWorkouts  Workout[] @relation("MemberWorkouts")
+  trainerWorkouts Workout[] @relation("TrainerWorkouts")
+
+}
+model Workout {
+  id        String   @id @default(uuid())
+  title     String
+  details   String
+  memberId  String
+  trainerId String
+  createdAt DateTime @default(now())
+
+  member  User @relation("MemberWorkouts", fields: [memberId], references: [id])
+  trainer User @relation("TrainerWorkouts", fields: [trainerId], references: [id])
+}
+
+
+
+enum Role {
+  OWNER
+  TRAINER
+  MEMBER
+  ADMIN
+}
